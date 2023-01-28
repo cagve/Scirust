@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 tui = "0.19"
+# dialoguer = "0.8.0"
+skim = "*"
 crossterm = "0.25"
 biblatex = "0.6"

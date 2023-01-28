@@ -84,7 +84,10 @@ pub fn get_entries_by_author(bibfile: String, author: String) -> Vec<Entry> {
                 .author()
                 .unwrap()
                 .iter()
-                .filter(|f| return f.name.contains(&author))
+                .filter(|f|   {
+                    return author.contains(&f.name);
+                }
+                    )
                 .collect::<Vec<_>>()
                 .len()
                 > 0;

@@ -1,7 +1,11 @@
 mod bib;
 
+use skim::prelude::*;
+use std::io::Cursor;
+
 use std::{io, thread, time::{Duration, Instant}, sync::mpsc};
 use bib::get_authors;
+use std::process::Command;
 use biblatex::ChunksExt;
 use tui::{
     backend::CrosstermBackend,
@@ -99,12 +103,10 @@ fn render_author<'a>(list_state: &ListState) -> (List<'a>,List<'a>) {
                 .expect("there is always a selected pet"),
         )
         .expect("Exists");
-    println!("{:?}", selected_entry);
 
     let bookitems: Vec<_> = bib::get_entries_by_author("/home/caguiler/Phd/Database/Bib/karubib.bib".to_string(), selected_entry.to_string())
         .iter()
-        // .map(|x| ListItem::new(x.title().unwrap().format_sentence()))
-        .map(|x| ListItem::new(selected_entry.to_string()))
+        .map(|x| ListItem::new(" ".to_string()+&x.title().unwrap().format_sentence()))
         .collect();
 
     let renderlist = List::new(items)
@@ -117,8 +119,10 @@ fn render_author<'a>(list_state: &ListState) -> (List<'a>,List<'a>) {
         )
         .highlight_symbol(">> ");
 
+    let title  = "List of books of ".to_string()+&selected_entry.to_string();
+
     let booklist = List::new(bookitems)
-        .block(Block::default().borders(Borders::ALL).title("Title"))
+        .block(Block::default().borders(Borders::ALL).title(title))
         .highlight_style(
             Style::default()
                 .bg(Color::Yellow)
@@ -129,6 +133,47 @@ fn render_author<'a>(list_state: &ListState) -> (List<'a>,List<'a>) {
 
     return (renderlist, booklist); 
 }
+
+
+
+
+fn fzf_menu(input:Vec<String>) -> String {
+    // let options = SkimOptionsBuilder::default()
+    //     .height(Some("50%"))
+    //     .multi(true)
+    //     .build()
+    //     .unwrap();
+    //
+    // let string = input.join("\n");
+    //
+    // let item_reader = SkimItemReader::default();
+    // let items = item_reader.of_bufread(Cursor::new(string));
+    //
+    // let selected_items = Skim::run_with(&options, Some(items))
+    //     .map(|out| out.selected_items)
+    //     .unwrap_or_else(|| Vec::new());
+    //
+    // let result = selected_items
+    //     .into_iter()
+    //     .next()
+    //     .unwrap()
+    //     .text()
+    //     .to_string();
+    //
+
+    
+    let result = Command::new("ls")
+        .output()
+        .expect("ls command failed to start");
+
+    return result.status.to_string();
+}
+
+// fn main(){
+//     let authors = bib::get_authors("/home/caguiler/Phd/Database/Bib/karubib.bib".to_string());
+//     let selected = fzf_menu(authors);
+//     print!("{}", selected);
+// }
 
 fn main() -> Result<(), io::Error> {
     enable_raw_mode()?;
@@ -169,11 +214,25 @@ fn main() -> Result<(), io::Error> {
                 .direction(Direction::Horizontal)
                 .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())
                 .split(f.size());
+
+            let leftchunk = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())
+                .split(chunks[0]);
+
+            let prueba =   Block::default()
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::White))
+                .title("Detail")
+                .border_type(BorderType::Plain);
+
             let (authors, book) = render_author(&list_state);
-            f.render_stateful_widget(authors, chunks[0], &mut list_state);
+            f.render_widget(prueba, leftchunk[0]);
+            f.render_stateful_widget(authors, leftchunk[1], &mut list_state);
             f.render_widget(book, chunks[1]);
+
         })?;
-        match rx.recv().expect("Is wroking") {
+        match rx.recv().expect("Is working") {
             Event::Input(event) => match event.code {
                 KeyCode::Char('q') => {
                     disable_raw_mode()?;
@@ -196,6 +255,11 @@ fn main() -> Result<(), io::Error> {
                         list_state.select(Some(list_state.selected().unwrap() - 1));
                     }
                 } 
+                KeyCode::Char('1') =>{
+                    disable_raw_mode()?;
+                    let selected = fzf_menu(bib::get_authors("/home/caguiler/Phd/Database/Bib/karubib.bib".to_string()));
+                    print!("{}", selected);
+                }
                 _ => {}
             },
             Event::Tick => {}
