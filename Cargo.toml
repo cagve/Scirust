@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 tui = "0.19"
-# dialoguer = "0.8.0"
-skim = "*"
+tui-textarea = { version = "*", features = ["search"] }
 crossterm = "0.25"
+regex = "1"
 biblatex = "0.6"
