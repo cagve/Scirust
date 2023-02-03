@@ -123,17 +123,35 @@ fn run_app<B: Backend>(
                         )
                         .expect("exists")
                         .clone();
-
-                    let mut book_details_items: Vec<ListItem> = Vec::new();
-                    selected_author.books.iter()
-                        .for_each(|x|{
-                            // let title = " ".to_string()..x.title().unwrap().format_sentence();
+                    
+                    let cell_vec:Vec<Row> = selected_author.books
+                        .iter()
+                        .map(|x| {
                             let title = x.title().unwrap().format_sentence();
-                            book_details_items.push(ListItem::new(title))
-                        });
+                            let key = &x.key;
+                            Row::new(vec![key.to_owned(), title])
+                        })
+                        .collect();
 
-                    let book_widget = List::new(book_details_items)
-                        .block(Block::default().borders(Borders::ALL).title("Books"));
+                    let book_details = Table::new(cell_vec)
+                    .header(Row::new(vec![
+                        Cell::from(Span::styled(
+                            "Key",
+                            Style::default().add_modifier(Modifier::BOLD),
+                        )),
+                        Cell::from(Span::styled(
+                            "Title",
+                            Style::default().add_modifier(Modifier::BOLD),
+                        )),
+                    ]))
+                    .block(
+                        Block::default()
+                            .borders(Borders::ALL)
+                            .style(Style::default().fg(Color::White))
+                            .title("Detail")
+                            .border_type(BorderType::Plain),
+                    )
+                    .widths(&[Constraint::Percentage(20), Constraint::Percentage(80)]);
 
                     let authors_widget = List::new(author_item)
                         .block(Block::default().borders(Borders::ALL).title("Authors"))
@@ -148,7 +166,7 @@ fn run_app<B: Backend>(
 
                     f.render_widget(textarea_widget, leftchunk[0]);
                     f.render_stateful_widget(authors_widget, leftchunk[1], &mut list_state);
-                    f.render_widget(book_widget, chunks[1]);
+                    f.render_widget(book_details, chunks[1]);
                 }
                 InputMode::Normal => {}
             }
