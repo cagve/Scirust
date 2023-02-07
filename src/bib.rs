@@ -1,5 +1,4 @@
 use std::fs;
-
 use biblatex::{Bibliography, ChunksExt, Entry};
 
 
@@ -29,14 +28,15 @@ impl Author {
 }
 
 pub fn get_authors(bibfile: String) -> Vec<Author> {
-    let bib = get_bibliography("/home/caguiler/Phd/Database/Bib/karubib.bib".to_string());
+    let file = bibfile.clone();
+    let bib = get_bibliography(file);
     let mut authors: Vec<Author> = Vec::new();
     bib.iter().for_each(|x| {
         x.author()
             .unwrap()
             .iter()
             .for_each(|y| {
-                let entries = get_entries_by_author("/home/caguiler/Phd/Database/Bib/karubib.bib".to_string(), y.to_string());
+                let entries = get_entries_by_author(bibfile.clone(), y.to_string());
                 let author = Author::new(y.to_string(), entries);
                 authors.push(author);
             })

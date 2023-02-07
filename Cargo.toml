@@ -9,5 +9,7 @@ edition = "2021"
 tui = "0.19"
 tui-textarea = { version = "*", features = ["search"] }
 crossterm = "0.25"
+opener = "0.5.2"
+dirs = "4.0.0"
 regex = "1"
 biblatex = "0.6"
