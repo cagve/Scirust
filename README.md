@@ -8,4 +8,5 @@
     - [FIX] Título dinámico.
 - [FIX] Tabs for search by title
 - [FIX] Tabs for search by tag
+- [FIX] Duplicate entries per author
 

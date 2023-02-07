@@ -1,6 +1,7 @@
 mod bib;
 mod utils;
 
+use itertools::Itertools;
 use bib::Author;
 use biblatex::{ChunksExt, Entry};
 use regex::Regex;
@@ -91,8 +92,12 @@ fn render_books(selected_author:Option<&Author>) -> Table{
                         Ok(y)  => title = " ".to_string() + &x.title().unwrap().format_sentence(),
                         _ => title = x.title().unwrap().format_sentence()
                     }
-                    let key = " ".to_string()+&x.key;
-                    Row::new(vec![key.to_owned(), title])
+                    // let key = " ".to_string()+&x.key;
+                    let authors:Vec<String> = x.author().unwrap()
+                        .iter()
+                        .map(|x|  x.clone().name )
+                        .collect();
+                    Row::new(vec![title, authors.join(" - ")])
                 })
             .collect();
         },
@@ -101,12 +106,16 @@ fn render_books(selected_author:Option<&Author>) -> Table{
 
     let book_details = Table::new(cell_vec)
         .header(Row::new(vec![
-                         Cell::from(Span::styled(
-                                 "Key",
-                                 Style::default().add_modifier(Modifier::BOLD),
-                                 )),
+                         // Cell::from(Span::styled(
+                         //         "Key",
+                         //         Style::default().add_modifier(Modifier::BOLD),
+                         //         )),
                                  Cell::from(Span::styled(
                                          "Title",
+                                         Style::default().add_modifier(Modifier::BOLD),
+                                         )),
+                                 Cell::from(Span::styled(
+                                         "Authors",
                                          Style::default().add_modifier(Modifier::BOLD),
                                          )),
         ]))
@@ -117,7 +126,7 @@ fn render_books(selected_author:Option<&Author>) -> Table{
             .title("Detail")
             .border_type(BorderType::Plain),
             )
-        .widths(&[Constraint::Percentage(20), Constraint::Percentage(80)]);
+        .widths(&[ Constraint::Percentage(70), Constraint::Percentage(30)]);
 
     return book_details;
 }
@@ -332,6 +341,4 @@ fn filter_authors(authors: &Vec<Author>, regex: String) -> Vec<ListItem> {
     return items;
 }
 
-fn open_books(entry:&Entry, path:String, app:App){
-}
 
